@@ -8,12 +8,20 @@ export interface ImageInfo {
   mimeType: string;
 }
 
+export interface CropRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface TransformOptions {
   width?: number;
   height?: number;
   dpi?: number;
   name?: string;
   format?: string;
+  crop?: CropRect;
 }
 
 const FORMAT_MIME: Record<string, string> = {
@@ -129,8 +137,14 @@ export async function transformImage(
   original: ImageInfo,
   options: TransformOptions
 ): Promise<Blob> {
-  const targetWidth = options.width ?? original.width;
-  const targetHeight = options.height ?? original.height;
+  const crop = options.crop;
+  const sourceX = crop?.x ?? 0;
+  const sourceY = crop?.y ?? 0;
+  const sourceW = crop?.w ?? original.width;
+  const sourceH = crop?.h ?? original.height;
+
+  const targetWidth = options.width ?? sourceW;
+  const targetHeight = options.height ?? sourceH;
   const targetFormat = options.format ?? original.format;
   const mime = FORMAT_MIME[targetFormat] || "image/png";
 
@@ -142,8 +156,7 @@ export async function transformImage(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  // Draw the image stretched/compressed to fit the target dimensions
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, targetWidth, targetHeight);
 
   // For PNG with custom DPI, we can patch the pHYs chunk
   if (targetFormat === "png" && options.dpi && options.dpi !== original.dpi) {

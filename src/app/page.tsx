@@ -4,21 +4,26 @@ import { useCallback, useRef, useState } from "react";
 import {
   ImageInfo,
   TransformOptions,
+  CropRect,
   SUPPORTED_FORMATS,
   formatFileSize,
   getImageInfo,
   loadImage,
   transformImage,
 } from "@/lib/image-utils";
+import { CropEditor } from "@/components/crop-editor";
 
 type Status = "idle" | "loading" | "ready" | "processing";
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle");
   const [original, setOriginal] = useState<ImageInfo | null>(null);
+  const [originalPreview, setOriginalPreview] = useState<string>("");
   const [preview, setPreview] = useState<string>("");
   const [options, setOptions] = useState<TransformOptions>({});
   const [lockRatio, setLockRatio] = useState(true);
+  const [showCropper, setShowCropper] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,9 +34,11 @@ export default function Home() {
       const { img, buffer } = await loadImage(file);
       imgRef.current = img;
       const info = getImageInfo(file, img, buffer);
+      const blobUrl = URL.createObjectURL(file);
       setOriginal(info);
       setOptions({});
-      setPreview(URL.createObjectURL(file));
+      setOriginalPreview(blobUrl);
+      setPreview(blobUrl);
       setStatus("ready");
     } catch {
       setStatus("idle");
@@ -87,11 +94,34 @@ export default function Home() {
     setStatus("ready");
   };
 
+  const handleCropApply = (crop: CropRect) => {
+    if (imgRef.current) {
+      const canvas = document.createElement("canvas");
+      canvas.width = crop.w;
+      canvas.height = crop.h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(imgRef.current, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+      setPreview(canvas.toDataURL());
+    }
+    setComparing(false);
+    setOptions((o) => ({ ...o, crop }));
+    setShowCropper(false);
+  };
+
+  const removeCrop = () => {
+    setOptions((o) => { const n = { ...o }; delete n.crop; return n; });
+    setPreview(originalPreview);
+    setComparing(false);
+  };
+
   const reset = () => {
     setStatus("idle");
     setOriginal(null);
+    setOriginalPreview("");
     setPreview("");
     setOptions({});
+    setShowCropper(false);
+    setComparing(false);
     imgRef.current = null;
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -101,10 +131,11 @@ export default function Home() {
     options.height !== undefined ||
     options.dpi !== undefined ||
     options.name !== undefined ||
-    options.format !== undefined;
+    options.format !== undefined ||
+    options.crop !== undefined;
 
-  const effectiveWidth = options.width ?? original?.width ?? 0;
-  const effectiveHeight = options.height ?? original?.height ?? 0;
+  const effectiveWidth = options.width ?? options.crop?.w ?? original?.width ?? 0;
+  const effectiveHeight = options.height ?? options.crop?.h ?? original?.height ?? 0;
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-5xl mx-auto">
@@ -175,7 +206,7 @@ export default function Home() {
             <div className="bg-card rounded-xl border border-border p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
-                  Preview
+                  {options.crop ? (comparing ? "Original" : "Cropped") : "Preview"}
                 </h2>
                 <button
                   onClick={reset}
@@ -187,10 +218,55 @@ export default function Home() {
               <div className="relative bg-[#0c0c0f] rounded-lg overflow-hidden flex items-center justify-center min-h-[240px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={preview}
+                  src={comparing ? originalPreview : preview}
                   alt="Preview"
-                  className="max-w-full max-h-[400px] object-contain"
+                  className="max-w-full max-h-[400px] object-contain transition-opacity duration-150"
                 />
+                {options.crop && !comparing && (
+                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md font-mono">
+                    {options.crop.w} × {options.crop.h} px
+                  </div>
+                )}
+                {options.crop && comparing && (
+                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md font-mono">
+                    {original?.width} × {original?.height} px
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => setShowCropper(true)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-muted hover:border-accent hover:text-accent transition-colors"
+                >
+                  <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 2v14a2 2 0 002 2h14M2 6h14a2 2 0 012 2v14" />
+                  </svg>
+                  {options.crop ? "Edit Crop" : "Crop Image"}
+                </button>
+                {options.crop && (
+                  <button
+                    onClick={() => setComparing((v) => !v)}
+                    className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                      comparing
+                        ? "border-accent text-accent bg-accent/10"
+                        : "border-border text-muted hover:border-accent hover:text-accent"
+                    }`}
+                    title={comparing ? "Show cropped" : "Compare with original"}
+                  >
+                    <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                    </svg>
+                  </button>
+                )}
+                {options.crop && (
+                  <button
+                    onClick={removeCrop}
+                    className="px-3 py-2 rounded-lg border border-border text-sm text-muted hover:border-danger hover:text-danger transition-colors"
+                    title="Revert to original"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
 
@@ -393,6 +469,13 @@ export default function Home() {
                       to={`${effectiveWidth}×${effectiveHeight}`}
                     />
                   )}
+                  {options.crop && (
+                    <ChangeBadge
+                      label="Crop"
+                      from={`${original.width}×${original.height}`}
+                      to={`${options.crop.w}×${options.crop.h}`}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -422,6 +505,15 @@ export default function Home() {
             </button>
           </div>
         </div>
+      )}
+      {showCropper && original && preview && (
+        <CropEditor
+          src={preview}
+          naturalWidth={original.width}
+          naturalHeight={original.height}
+          onApply={handleCropApply}
+          onCancel={() => setShowCropper(false)}
+        />
       )}
     </main>
   );
