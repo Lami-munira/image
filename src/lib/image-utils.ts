@@ -1,3 +1,5 @@
+import { encodeBmp } from "./bmp-encoder";
+
 export interface ImageInfo {
   name: string;
   format: string;
@@ -15,13 +17,46 @@ export interface CropRect {
   h: number;
 }
 
-export interface TransformOptions {
-  width?: number;
-  height?: number;
-  dpi?: number;
-  name?: string;
-  format?: string;
-  crop?: CropRect;
+/**
+ * The editor's working image: straight (non-premultiplied) RGBA bytes.
+ * Every tool takes one of these in and produces a new one out.
+ * The buffer generic keeps the type assignable to `new ImageData(...)`.
+ */
+export interface RawImage {
+  data: Uint8ClampedArray<ArrayBuffer>;
+  width: number;
+  height: number;
+}
+
+export function cloneRaw(raw: RawImage): RawImage {
+  return { data: new Uint8ClampedArray(raw.data), width: raw.width, height: raw.height };
+}
+
+/** Decode an <img> into working RGBA pixels. */
+export function imgToRaw(img: HTMLImageElement): RawImage {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0);
+  return {
+    data: ctx.getImageData(0, 0, canvas.width, canvas.height).data,
+    width: canvas.width,
+    height: canvas.height,
+  };
+}
+
+export function rawToCanvas(raw: RawImage): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = raw.width;
+  canvas.height = raw.height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.putImageData(new ImageData(raw.data, raw.width, raw.height), 0, 0);
+  return canvas;
+}
+
+export function rawToDataUrl(raw: RawImage): string {
+  return rawToCanvas(raw).toDataURL("image/png");
 }
 
 const FORMAT_MIME: Record<string, string> = {
@@ -33,6 +68,65 @@ const FORMAT_MIME: Record<string, string> = {
 };
 
 export const SUPPORTED_FORMATS = ["png", "jpeg", "webp", "bmp"];
+
+export interface EncodeOptions {
+  format: string;
+  /** 1–100, used by lossy encoders (JPEG/WebP). */
+  quality?: number;
+  /** DPI metadata written into PNG pHYs / JPEG JFIF chunks. */
+  dpi?: number;
+  /** CSS color used to flatten transparency for JPEG/BMP. */
+  background?: string;
+}
+
+export interface EncodeResult {
+  blob: Blob;
+  ext: string;
+}
+
+/**
+ * Encode working pixels to an image file.
+ * - PNG/JPEG/WebP via canvas; JPEG/BMP flatten alpha onto `background`
+ *   (browsers would otherwise flatten JPEG onto black).
+ * - BMP uses a real 24-bit encoder (canvas.toBlob cannot write BMP).
+ * - DPI is patched into PNG pHYs / JPEG JFIF after encoding.
+ */
+export async function encodeImage(raw: RawImage, opts: EncodeOptions): Promise<EncodeResult> {
+  const format = opts.format in FORMAT_MIME ? opts.format : "png";
+  const ext = format === "jpeg" ? "jpg" : format;
+
+  if (format === "bmp") {
+    const buf = encodeBmp(raw.data, raw.width, raw.height, opts.background ?? "#ffffff");
+    return { blob: new Blob([buf], { type: "image/bmp" }), ext };
+  }
+
+  const mime = FORMAT_MIME[format];
+  let canvas = rawToCanvas(raw);
+
+  if (format === "jpeg") {
+    const flat = document.createElement("canvas");
+    flat.width = raw.width;
+    flat.height = raw.height;
+    const fctx = flat.getContext("2d")!;
+    fctx.fillStyle = opts.background ?? "#ffffff";
+    fctx.fillRect(0, 0, flat.width, flat.height);
+    fctx.drawImage(canvas, 0, 0);
+    canvas = flat;
+  }
+
+  const quality = Math.min(100, Math.max(1, opts.quality ?? 95)) / 100;
+  let blob = await new Promise<Blob>((resolve) => {
+    canvas.toBlob((b) => resolve(b ?? new Blob()), mime, format === "png" ? undefined : quality);
+  });
+
+  if (opts.dpi && (format === "png" || format === "jpeg")) {
+    const buf = await blob.arrayBuffer();
+    const patched = format === "png" ? patchPngDpi(buf, opts.dpi) : patchJpegDpi(buf, opts.dpi);
+    blob = new Blob([patched], { type: mime });
+  }
+
+  return { blob, ext };
+}
 
 export function getFileExtension(filename: string): string {
   return filename.split(".").pop()?.toLowerCase() || "png";
@@ -99,24 +193,28 @@ export function extractDpi(buffer: ArrayBuffer): number {
   return 72;
 }
 
-export function loadImage(file: File): Promise<{ img: HTMLImageElement; buffer: ArrayBuffer }> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const buffer = reader.result as ArrayBuffer;
-      const blob = new Blob([buffer], { type: file.type });
-      const url = URL.createObjectURL(blob);
-      const img = new Image();
-      img.onload = () => {
-        resolve({ img, buffer });
-        URL.revokeObjectURL(url);
-      };
+/**
+ * Decode an uploaded file.
+ * Single-copy path: the File itself becomes the object URL source (no
+ * FileReader → Blob re-wrap). DPI bytes are read once, only after the image
+ * has decoded, so huge files aren't held twice in memory.
+ */
+export async function loadImage(
+  file: File
+): Promise<{ img: HTMLImageElement; buffer: ArrayBuffer }> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
       img.onerror = () => reject(new Error("Failed to load image"));
       img.src = url;
-    };
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsArrayBuffer(file);
-  });
+    });
+    const buffer = await file.arrayBuffer(); // for DPI metadata extraction
+    return { img, buffer };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export function getImageInfo(file: File, img: HTMLImageElement, buffer: ArrayBuffer): ImageInfo {
@@ -130,75 +228,6 @@ export function getImageInfo(file: File, img: HTMLImageElement, buffer: ArrayBuf
     fileSize: file.size,
     mimeType: file.type,
   };
-}
-
-export async function transformImage(
-  img: HTMLImageElement,
-  original: ImageInfo,
-  options: TransformOptions
-): Promise<Blob> {
-  const crop = options.crop;
-  const sourceX = crop?.x ?? 0;
-  const sourceY = crop?.y ?? 0;
-  const sourceW = crop?.w ?? original.width;
-  const sourceH = crop?.h ?? original.height;
-
-  const targetWidth = options.width ?? sourceW;
-  const targetHeight = options.height ?? sourceH;
-  const targetFormat = options.format ?? original.format;
-  const mime = FORMAT_MIME[targetFormat] || "image/png";
-
-  const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-
-  const ctx = canvas.getContext("2d")!;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-
-  ctx.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, targetWidth, targetHeight);
-
-  // For PNG with custom DPI, we can patch the pHYs chunk
-  if (targetFormat === "png" && options.dpi && options.dpi !== original.dpi) {
-    return new Promise((resolve) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return resolve(new Blob());
-          blob.arrayBuffer().then((buf) => {
-            const patched = patchPngDpi(buf, options.dpi!);
-            resolve(new Blob([patched], { type: "image/png" }));
-          });
-        },
-        mime,
-        1.0
-      );
-    });
-  }
-
-  // For JPEG with custom DPI, patch JFIF
-  if ((targetFormat === "jpeg" || targetFormat === "jpg") && options.dpi && options.dpi !== original.dpi) {
-    return new Promise((resolve) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return resolve(new Blob());
-          blob.arrayBuffer().then((buf) => {
-            const patched = patchJpegDpi(buf, options.dpi!);
-            resolve(new Blob([patched], { type: "image/jpeg" }));
-          });
-        },
-        mime,
-        0.95
-      );
-    });
-  }
-
-  return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => resolve(blob || new Blob()),
-      mime,
-      mime === "image/jpeg" ? 0.95 : 1.0
-    );
-  });
 }
 
 function patchPngDpi(buffer: ArrayBuffer, dpi: number): ArrayBuffer {
@@ -249,7 +278,6 @@ function patchPngDpi(buffer: ArrayBuffer, dpi: number): ArrayBuffer {
 
 function patchJpegDpi(buffer: ArrayBuffer, dpi: number): ArrayBuffer {
   const src = new Uint8Array(buffer);
-  const view = new DataView(buffer);
 
   // Find APP0 JFIF segment
   if (src[0] === 0xff && src[1] === 0xd8 && src[2] === 0xff && src[3] === 0xe0) {

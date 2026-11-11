@@ -45,10 +45,21 @@ const ASPECT_PRESETS: { label: string; value: number | null }[] = [
   { label: "9:16", value: 9 / 16 },
 ];
 
-export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel }: CropEditorProps) {
+export function CropEditor({
+  src,
+  naturalWidth,
+  naturalHeight,
+  onApply,
+  onCancel,
+}: CropEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
-  const dragRef = useRef<{ handle: Handle; startX: number; startY: number; startCrop: CropRect } | null>(null);
+  const dragRef = useRef<{
+    handle: Handle;
+    startX: number;
+    startY: number;
+    startCrop: CropRect;
+  } | null>(null);
 
   const [imgRect, setImgRect] = useState<DisplayRect | null>(null);
   const [crop, setCrop] = useState<CropRect | null>(null);
@@ -60,8 +71,15 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
     if (!img || !container) return;
     const cb = container.getBoundingClientRect();
     const ib = img.getBoundingClientRect();
-    const rect = { left: ib.left - cb.left, top: ib.top - cb.top, width: ib.width, height: ib.height };
+    const rect = {
+      left: ib.left - cb.left,
+      top: ib.top - cb.top,
+      width: ib.width,
+      height: ib.height,
+    };
     setImgRect(rect);
+    // First measurement also seeds the crop box (full image)
+    setCrop((c) => c ?? { x: 0, y: 0, w: rect.width, h: rect.height });
   }, []);
 
   // Measure after first paint
@@ -75,13 +93,6 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
     window.addEventListener("resize", measureImg);
     return () => window.removeEventListener("resize", measureImg);
   }, [measureImg]);
-
-  // Init crop to full image once we know the display rect
-  useEffect(() => {
-    if (imgRect && !crop) {
-      setCrop({ x: 0, y: 0, w: imgRect.width, h: imgRect.height });
-    }
-  }, [imgRect, crop]);
 
   // Global mouse events for drag
   useEffect(() => {
@@ -122,8 +133,14 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
           } else {
             h = w / aspectRatio;
           }
-          if (x + w > iw) { w = iw - x; h = w / aspectRatio; }
-          if (y + h > ih) { h = ih - y; w = h * aspectRatio; }
+          if (x + w > iw) {
+            w = iw - x;
+            h = w / aspectRatio;
+          }
+          if (y + h > ih) {
+            h = ih - y;
+            w = h * aspectRatio;
+          }
           w = Math.max(MIN_SIZE, w);
           h = Math.max(MIN_SIZE, h);
         }
@@ -132,7 +149,9 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
       setCrop({ x, y, w, h });
     };
 
-    const onUp = () => { dragRef.current = null; };
+    const onUp = () => {
+      dragRef.current = null;
+    };
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
@@ -164,28 +183,28 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
     if (imgRect) setCrop({ x: 0, y: 0, w: imgRect.width, h: imgRect.height });
   };
 
-  const handles: { id: Handle; cx: number; cy: number }[] =
-    crop
-      ? [
-          { id: "nw", cx: crop.x, cy: crop.y },
-          { id: "n", cx: crop.x + crop.w / 2, cy: crop.y },
-          { id: "ne", cx: crop.x + crop.w, cy: crop.y },
-          { id: "e", cx: crop.x + crop.w, cy: crop.y + crop.h / 2 },
-          { id: "se", cx: crop.x + crop.w, cy: crop.y + crop.h },
-          { id: "s", cx: crop.x + crop.w / 2, cy: crop.y + crop.h },
-          { id: "sw", cx: crop.x, cy: crop.y + crop.h },
-          { id: "w", cx: crop.x, cy: crop.y + crop.h / 2 },
-        ]
-      : [];
+  const handles: { id: Handle; cx: number; cy: number }[] = crop
+    ? [
+        { id: "nw", cx: crop.x, cy: crop.y },
+        { id: "n", cx: crop.x + crop.w / 2, cy: crop.y },
+        { id: "ne", cx: crop.x + crop.w, cy: crop.y },
+        { id: "e", cx: crop.x + crop.w, cy: crop.y + crop.h / 2 },
+        { id: "se", cx: crop.x + crop.w, cy: crop.y + crop.h },
+        { id: "s", cx: crop.x + crop.w / 2, cy: crop.y + crop.h },
+        { id: "sw", cx: crop.x, cy: crop.y + crop.h },
+        { id: "w", cx: crop.x, cy: crop.y + crop.h / 2 },
+      ]
+    : [];
 
-  const naturalCrop = crop && imgRect
-    ? {
-        x: Math.round((crop.x / imgRect.width) * naturalWidth),
-        y: Math.round((crop.y / imgRect.height) * naturalHeight),
-        w: Math.round((crop.w / imgRect.width) * naturalWidth),
-        h: Math.round((crop.h / imgRect.height) * naturalHeight),
-      }
-    : null;
+  const naturalCrop =
+    crop && imgRect
+      ? {
+          x: Math.round((crop.x / imgRect.width) * naturalWidth),
+          y: Math.round((crop.y / imgRect.height) * naturalHeight),
+          w: Math.round((crop.w / imgRect.width) * naturalWidth),
+          h: Math.round((crop.h / imgRect.height) * naturalHeight),
+        }
+      : null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 p-4 select-none">
@@ -229,26 +248,71 @@ export function CropEditor({ src, naturalWidth, naturalHeight, onApply, onCancel
         {imgRect && crop && (
           <div
             className="absolute pointer-events-none"
-            style={{ left: imgRect.left, top: imgRect.top, width: imgRect.width, height: imgRect.height }}
+            style={{
+              left: imgRect.left,
+              top: imgRect.top,
+              width: imgRect.width,
+              height: imgRect.height,
+            }}
           >
             {/* Dim overlay — 4 quadrants around crop */}
-            <div className="absolute bg-black/55" style={{ left: 0, top: 0, width: imgRect.width, height: crop.y }} />
-            <div className="absolute bg-black/55" style={{ left: 0, top: crop.y + crop.h, width: imgRect.width, height: imgRect.height - crop.y - crop.h }} />
-            <div className="absolute bg-black/55" style={{ left: 0, top: crop.y, width: crop.x, height: crop.h }} />
-            <div className="absolute bg-black/55" style={{ left: crop.x + crop.w, top: crop.y, width: imgRect.width - crop.x - crop.w, height: crop.h }} />
+            <div
+              className="absolute bg-black/55"
+              style={{ left: 0, top: 0, width: imgRect.width, height: crop.y }}
+            />
+            <div
+              className="absolute bg-black/55"
+              style={{
+                left: 0,
+                top: crop.y + crop.h,
+                width: imgRect.width,
+                height: imgRect.height - crop.y - crop.h,
+              }}
+            />
+            <div
+              className="absolute bg-black/55"
+              style={{ left: 0, top: crop.y, width: crop.x, height: crop.h }}
+            />
+            <div
+              className="absolute bg-black/55"
+              style={{
+                left: crop.x + crop.w,
+                top: crop.y,
+                width: imgRect.width - crop.x - crop.w,
+                height: crop.h,
+              }}
+            />
 
             {/* Crop box */}
             <div
               className="absolute border border-white/90 pointer-events-auto"
-              style={{ left: crop.x, top: crop.y, width: crop.w, height: crop.h, cursor: CURSOR.move }}
+              style={{
+                left: crop.x,
+                top: crop.y,
+                width: crop.w,
+                height: crop.h,
+                cursor: CURSOR.move,
+              }}
               onMouseDown={(e) => startDrag(e, "move")}
             >
               {/* Rule-of-thirds grid */}
               <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 bottom-0 border-l border-white/20" style={{ left: "33.33%" }} />
-                <div className="absolute top-0 bottom-0 border-l border-white/20" style={{ left: "66.66%" }} />
-                <div className="absolute left-0 right-0 border-t border-white/20" style={{ top: "33.33%" }} />
-                <div className="absolute left-0 right-0 border-t border-white/20" style={{ top: "66.66%" }} />
+                <div
+                  className="absolute top-0 bottom-0 border-l border-white/20"
+                  style={{ left: "33.33%" }}
+                />
+                <div
+                  className="absolute top-0 bottom-0 border-l border-white/20"
+                  style={{ left: "66.66%" }}
+                />
+                <div
+                  className="absolute left-0 right-0 border-t border-white/20"
+                  style={{ top: "33.33%" }}
+                />
+                <div
+                  className="absolute left-0 right-0 border-t border-white/20"
+                  style={{ top: "66.66%" }}
+                />
               </div>
               {/* Corner accent lines */}
               <div className="absolute top-0 left-0 w-4 h-0.5 bg-white" />

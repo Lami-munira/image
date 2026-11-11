@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Image Resizer",
-  description: "Resize, convert, and optimize images in your browser",
+  title: "Image Studio — resize, crop, rotate, blur, draw, convert",
+  description:
+    "Browser image tool with real interpolation (nearest, bilinear, bicubic, Lanczos3), crop, rotate, Gaussian blur, drawing, and format conversion — everything processed locally",
 };
 
 export default function RootLayout({
@@ -24,11 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
