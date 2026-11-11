@@ -45,7 +45,7 @@ function Thumb({ raw, size = THUMB_PX }: { raw: RawImage; size?: number }) {
     <canvas
       ref={ref}
       style={{ width: size, height: size }}
-      className="rounded border border-border checker shrink-0"
+      className="rounded-lg border border-border-soft checker shrink-0"
     />
   );
 }
@@ -74,10 +74,10 @@ export function HistoryPanel({ rows, busy, onJump, onReapply }: HistoryPanelProp
                   onJump(row.index);
                 }
               }}
-              className={`flex items-center gap-2.5 p-2 rounded-lg border transition-colors cursor-pointer ${
+              className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all cursor-pointer ${
                 row.isCurrent
-                  ? "border-accent bg-accent/10"
-                  : "border-border hover:border-accent/60"
+                  ? "border-accent/50 bg-accent/10 shadow-[0_4px_18px_rgba(203,173,141,0.10)]"
+                  : "border-border-soft hover:border-accent/40 hover:bg-accent/[0.04]"
               } ${row.isFuture ? "opacity-55" : ""}`}
             >
               {/* before → after pair */}
@@ -117,11 +117,11 @@ export function HistoryPanel({ rows, busy, onJump, onReapply }: HistoryPanelProp
 
               {/* badges + actions */}
               {row.isCurrent ? (
-                <span className="text-[10px] font-medium text-accent border border-accent/50 rounded px-1.5 py-0.5 shrink-0">
+                <span className="text-[10px] font-medium text-accent border border-accent/50 bg-accent/10 rounded-full px-2 py-0.5 shrink-0">
                   Current
                 </span>
               ) : row.isFuture ? (
-                <span className="text-[10px] text-muted border border-border rounded px-1.5 py-0.5 shrink-0">
+                <span className="text-[10px] text-muted border border-border rounded-full px-2 py-0.5 shrink-0">
                   redo
                 </span>
               ) : null}
@@ -133,7 +133,7 @@ export function HistoryPanel({ rows, busy, onJump, onReapply }: HistoryPanelProp
                   }}
                   disabled={busy}
                   title={`Run "${row.label}" again on the current image`}
-                  className="text-[10px] text-muted border border-border rounded-md px-1.5 py-1 hover:border-accent hover:text-accent transition-colors disabled:opacity-40 shrink-0"
+                  className="btn-ghost px-2 py-0.5 text-[10px] shrink-0"
                 >
                   ↻ again
                 </button>

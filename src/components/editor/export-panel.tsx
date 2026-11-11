@@ -54,7 +54,7 @@ export function ExportPanel({ raw, original, busy }: ExportPanelProps) {
 
   return (
     <div>
-      <div className="mb-4 p-3 bg-background rounded-lg border border-border text-xs text-muted font-mono">
+      <div className="mb-4 p-3 rounded-xl bg-raised/60 border border-border-soft text-xs text-muted font-mono">
         {raw.width} × {raw.height} px
         {lastSize !== null && ` · last export ${formatFileSize(lastSize)}`}
       </div>
@@ -67,17 +67,13 @@ export function ExportPanel({ raw, original, busy }: ExportPanelProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={original.name}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+            className="input"
           />
         </div>
 
         <div>
           <label className="block text-xs text-muted mb-1">Format</label>
-          <select
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
-          >
+          <select value={format} onChange={(e) => setFormat(e.target.value)} className="input">
             {SUPPORTED_FORMATS.map((f) => (
               <option key={f} value={f}>
                 {f.toUpperCase()}
@@ -119,7 +115,7 @@ export function ExportPanel({ raw, original, busy }: ExportPanelProps) {
             max={2400}
             value={dpi}
             onChange={(e) => setDpi(parseInt(e.target.value) || 72)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+            className="input"
           />
           <p className="mt-1.5 text-[11px] text-muted leading-snug">
             Written into PNG pHYs / JPEG JFIF chunks — pixel data is unchanged.
@@ -143,11 +139,11 @@ export function ExportPanel({ raw, original, busy }: ExportPanelProps) {
         <button
           onClick={handleDownload}
           disabled={saving || busy}
-          className="w-full px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-primary w-full py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {saving ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-accent-ink border-t-transparent rounded-full animate-spin" />
               Encoding…
             </span>
           ) : (

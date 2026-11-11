@@ -207,21 +207,17 @@ export function CropEditor({
       : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 p-4 select-none">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#15100c]/90 backdrop-blur-sm p-4 select-none">
       {/* Toolbar */}
       <div className="w-full max-w-5xl mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-white font-semibold text-base">Crop Image</h2>
+        <h2 className="text-foreground font-semibold text-base">Crop Image</h2>
 
         <div className="flex flex-wrap gap-1.5">
           {ASPECT_PRESETS.map((p) => (
             <button
               key={p.label}
               onClick={() => setAspectRatio(p.value)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
-                aspectRatio === p.value
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-white/20 text-white/50 hover:border-white/40 hover:text-white/80"
-              }`}
+              className={`btn-ghost ${aspectRatio === p.value ? "on" : ""}`}
             >
               {p.label}
             </button>
@@ -285,7 +281,7 @@ export function CropEditor({
 
             {/* Crop box */}
             <div
-              className="absolute border border-white/90 pointer-events-auto"
+              className="absolute border border-foreground/80 pointer-events-auto"
               style={{
                 left: crop.x,
                 top: crop.y,
@@ -298,31 +294,31 @@ export function CropEditor({
               {/* Rule-of-thirds grid */}
               <div className="absolute inset-0 pointer-events-none">
                 <div
-                  className="absolute top-0 bottom-0 border-l border-white/20"
+                  className="absolute top-0 bottom-0 border-l border-foreground/15"
                   style={{ left: "33.33%" }}
                 />
                 <div
-                  className="absolute top-0 bottom-0 border-l border-white/20"
+                  className="absolute top-0 bottom-0 border-l border-foreground/15"
                   style={{ left: "66.66%" }}
                 />
                 <div
-                  className="absolute left-0 right-0 border-t border-white/20"
+                  className="absolute left-0 right-0 border-t border-foreground/15"
                   style={{ top: "33.33%" }}
                 />
                 <div
-                  className="absolute left-0 right-0 border-t border-white/20"
+                  className="absolute left-0 right-0 border-t border-foreground/15"
                   style={{ top: "66.66%" }}
                 />
               </div>
               {/* Corner accent lines */}
-              <div className="absolute top-0 left-0 w-4 h-0.5 bg-white" />
-              <div className="absolute top-0 left-0 w-0.5 h-4 bg-white" />
-              <div className="absolute top-0 right-0 w-4 h-0.5 bg-white" />
-              <div className="absolute top-0 right-0 w-0.5 h-4 bg-white" />
-              <div className="absolute bottom-0 left-0 w-4 h-0.5 bg-white" />
-              <div className="absolute bottom-0 left-0 w-0.5 h-4 bg-white" />
-              <div className="absolute bottom-0 right-0 w-4 h-0.5 bg-white" />
-              <div className="absolute bottom-0 right-0 w-0.5 h-4 bg-white" />
+              <div className="absolute top-0 left-0 w-4 h-0.5 bg-accent" />
+              <div className="absolute top-0 left-0 w-0.5 h-4 bg-accent" />
+              <div className="absolute top-0 right-0 w-4 h-0.5 bg-accent" />
+              <div className="absolute top-0 right-0 w-0.5 h-4 bg-accent" />
+              <div className="absolute bottom-0 left-0 w-4 h-0.5 bg-accent" />
+              <div className="absolute bottom-0 left-0 w-0.5 h-4 bg-accent" />
+              <div className="absolute bottom-0 right-0 w-4 h-0.5 bg-accent" />
+              <div className="absolute bottom-0 right-0 w-0.5 h-4 bg-accent" />
             </div>
 
             {/* Resize handles */}
@@ -330,7 +326,7 @@ export function CropEditor({
               <div
                 key={h.id}
                 onMouseDown={(e) => startDrag(e, h.id)}
-                className="absolute bg-white rounded-sm shadow pointer-events-auto"
+                className="absolute bg-foreground rounded-full shadow pointer-events-auto"
                 style={{
                   width: HANDLE_PX,
                   height: HANDLE_PX,
@@ -346,7 +342,7 @@ export function CropEditor({
       </div>
 
       {/* Dimensions readout */}
-      <div className="mt-3 h-5 text-white/50 text-xs font-mono">
+      <div className="mt-3 h-5 text-muted text-xs font-mono">
         {naturalCrop && (
           <span>
             {naturalCrop.x}, {naturalCrop.y} &nbsp;→&nbsp; {naturalCrop.w} × {naturalCrop.h} px
@@ -356,22 +352,13 @@ export function CropEditor({
 
       {/* Actions */}
       <div className="mt-4 flex gap-3">
-        <button
-          onClick={reset}
-          className="px-4 py-2 rounded-lg border border-white/20 text-white/60 text-sm hover:border-white/40 hover:text-white/80 transition-colors"
-        >
+        <button onClick={reset} className="btn-ghost px-4 py-2 text-sm">
           Reset
         </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 rounded-lg border border-white/20 text-white/60 text-sm hover:border-white/40 hover:text-white/80 transition-colors"
-        >
+        <button onClick={onCancel} className="btn-ghost px-4 py-2 text-sm">
           Cancel
         </button>
-        <button
-          onClick={handleApply}
-          className="px-6 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors"
-        >
+        <button onClick={handleApply} className="btn-primary px-6 py-2">
           Apply Crop
         </button>
       </div>

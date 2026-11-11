@@ -51,6 +51,10 @@ const SWATCHES = [
   "#3b82f6",
   "#8b5cf6",
   "#ec4899",
+  "#3a2d28",
+  "#a48374",
+  "#cbad8d",
+  "#d1c7bd",
 ];
 
 interface Pt {
@@ -321,11 +325,7 @@ export function DrawCanvas({ raw, version, busy, onCommit, onUndo, canUndo }: Dr
             key={t.id}
             title={t.label}
             onClick={() => setTool(t.id)}
-            className={`px-2 py-1.5 rounded-md border text-xs transition-colors ${
-              tool === t.id
-                ? "border-accent text-accent bg-accent/10"
-                : "border-border text-muted hover:border-accent hover:text-accent"
-            }`}
+            className={`btn-soft w-8 h-8 p-0 ${tool === t.id ? "on" : ""}`}
           >
             <svg
               width="14"
@@ -386,7 +386,7 @@ export function DrawCanvas({ raw, version, busy, onCommit, onUndo, canUndo }: Dr
         <button
           onClick={onUndo}
           disabled={!canUndo || busy}
-          className="px-2 py-1.5 rounded-md border border-border text-xs text-muted hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+          className="btn-ghost"
           title="Undo last stroke (⌘Z)"
         >
           Undo stroke
@@ -395,7 +395,7 @@ export function DrawCanvas({ raw, version, busy, onCommit, onUndo, canUndo }: Dr
 
       {/* Canvas stack: inner wrapper shrink-wraps the base canvas so the
           overlay aligns with the visible image exactly */}
-      <div className="checker rounded-lg border border-border overflow-hidden flex justify-center">
+      <div className="checker rounded-2xl border border-border-soft overflow-hidden flex justify-center">
         <div className="relative inline-block">
           <canvas ref={baseRef} className="block max-w-full max-h-[52vh] w-auto h-auto" />
           <canvas
@@ -418,13 +418,13 @@ export function DrawCanvas({ raw, version, busy, onCommit, onUndo, canUndo }: Dr
                 }}
                 onBlur={commitText}
                 placeholder="Type, Enter to place"
-                className="absolute px-2 py-1 rounded-md bg-black/85 border border-accent text-white text-sm outline-none min-w-48"
+                className="absolute px-2.5 py-1.5 rounded-lg bg-[#1e1713]/90 backdrop-blur-sm border border-accent/60 text-foreground text-sm outline-none min-w-48 shadow-lg"
                 style={{ left: textBox.dx, top: textBox.dy }}
               />
             </div>
           )}
           {busy && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#1e1713]/55 flex items-center justify-center">
               <span className="inline-block w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
           )}

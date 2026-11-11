@@ -330,9 +330,9 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Image Studio</h1>
-          <p className="text-muted mt-1 text-sm">
+        <header className="text-center mb-10">
+          <h1 className="text-3xl font-semibold tracking-tight">Image Studio</h1>
+          <p className="text-muted mt-1.5 text-sm">
             Resize, crop, rotate, blur, draw, convert — all math, all in your browser
           </p>
         </header>
@@ -343,25 +343,27 @@ export default function Home() {
             onDrop={onDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => inputRef.current?.click()}
-            className="max-w-3xl mx-auto border-2 border-dashed border-border rounded-2xl p-16 text-center cursor-pointer hover:border-accent transition-colors"
+            className="max-w-3xl mx-auto rounded-[28px] border border-dashed border-border bg-card/40 p-14 text-center cursor-pointer transition-all duration-200 hover:border-accent/70 hover:bg-accent/[0.04] hover:shadow-[0_18px_44px_rgba(0,0,0,0.25)]"
           >
-            <svg
-              className="mx-auto mb-4 text-muted"
-              width="48"
-              height="48"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-              />
-            </svg>
+            <div className="mx-auto mb-5 w-16 h-16 rounded-full bg-raised border border-border-soft flex items-center justify-center">
+              <svg
+                className="text-accent"
+                width="26"
+                height="26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                />
+              </svg>
+            </div>
             <p className="text-lg font-medium">Drop an image here or click to browse</p>
-            <p className="text-muted text-sm mt-1">
+            <p className="text-muted text-sm mt-1.5">
               Everything is processed locally — nothing is uploaded
             </p>
             <input
@@ -391,15 +393,12 @@ export default function Home() {
             {/* Main column */}
             <div className="space-y-4 min-w-0">
               {tool === "draw" ? (
-                <div className="bg-card rounded-xl border border-border p-4">
+                <div className="panel p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
                       Draw
                     </h2>
-                    <button
-                      onClick={startOver}
-                      className="text-xs text-muted hover:text-danger transition-colors"
-                    >
+                    <button onClick={startOver} className="btn-ghost danger">
                       Start Over
                     </button>
                   </div>
@@ -413,60 +412,57 @@ export default function Home() {
                   />
                 </div>
               ) : (
-                <div className="bg-card rounded-xl border border-border p-4">
+                <div className="panel p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
                       Preview
                     </h2>
-                    <button
-                      onClick={startOver}
-                      className="text-xs text-muted hover:text-danger transition-colors"
-                    >
+                    <button onClick={startOver} className="btn-ghost danger">
                       Start Over
                     </button>
                   </div>
-                  <div className="relative checker rounded-lg border border-border overflow-hidden flex justify-center items-center min-h-[240px]">
+                  <div className="relative checker rounded-2xl border border-border-soft overflow-hidden flex justify-center items-center min-h-[240px]">
                     <canvas
                       ref={previewRef}
                       className="block max-w-full max-h-[52vh] w-auto h-auto"
                     />
-                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md font-mono">
+                    <div className="absolute bottom-3 left-3 bg-[#1e1713]/80 backdrop-blur-sm border border-white/10 text-foreground text-xs px-2.5 py-1 rounded-full font-mono">
                       {cur.width} × {cur.height} px
                       {histInfo.edits > 0 && (
-                        <span className="text-white/50">
+                        <span className="text-foreground/50">
                           {" "}
                           · from {original.width} × {original.height}
                         </span>
                       )}
                     </div>
                     {busy && (
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">
+                      <div className="absolute inset-0 bg-[#1e1713]/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3">
                         <span className="inline-block w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                        <span className="text-white/80 text-sm">{busy}…</span>
+                        <span className="text-foreground/80 text-sm">{busy}…</span>
                       </div>
                     )}
                   </div>
 
                   {/* History bar */}
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-4 flex items-center gap-2">
                     <button
                       onClick={undo}
                       disabled={!histInfo.canUndo || busy !== null}
-                      className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted hover:border-accent hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="btn-ghost"
                     >
                       ⟲ Undo
                     </button>
                     <button
                       onClick={redo}
                       disabled={!histInfo.canRedo || busy !== null}
-                      className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted hover:border-accent hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="btn-ghost"
                     >
                       Redo ⟳
                     </button>
                     <button
                       onClick={resetToBase}
                       disabled={histInfo.edits === 0 || busy !== null}
-                      className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted hover:border-danger hover:text-danger transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="btn-ghost danger"
                     >
                       Reset
                     </button>
@@ -496,17 +492,13 @@ export default function Home() {
             </div>
 
             {/* Sidebar */}
-            <aside className="bg-card rounded-xl border border-border p-4 lg:sticky lg:top-4">
+            <aside className="panel p-4 lg:sticky lg:top-6">
               <div className="grid grid-cols-4 gap-1.5 mb-4">
                 {TABS.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setTool(t.id)}
-                    className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg border text-[11px] font-medium transition-colors ${
-                      tool === t.id
-                        ? "border-accent text-accent bg-accent/10"
-                        : "border-border text-muted hover:border-accent hover:text-accent"
-                    }`}
+                    className={`tab-btn ${tool === t.id ? "on" : ""}`}
                   >
                     <svg
                       width="15"
@@ -548,11 +540,11 @@ export default function Home() {
                   <button
                     onClick={openCropper}
                     disabled={busy !== null}
-                    className="w-full px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-40"
+                    className="btn-primary w-full disabled:opacity-40"
                   >
                     Open Crop Editor
                   </button>
-                  <div className="mt-4 p-3 bg-background rounded-lg border border-border text-xs text-muted font-mono">
+                  <div className="mt-4 p-3 rounded-xl bg-raised/60 border border-border-soft text-xs text-muted font-mono">
                     working: {cur.width} × {cur.height} px
                   </div>
                 </div>
@@ -628,8 +620,8 @@ export default function Home() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-card rounded-lg p-3 border border-border">
-      <p className="text-xs text-muted">{label}</p>
+    <div className="bg-raised/50 rounded-2xl border border-border-soft p-3">
+      <p className="text-[11px] text-muted">{label}</p>
       <p className="text-sm font-medium mt-0.5 truncate" title={value}>
         {value}
       </p>

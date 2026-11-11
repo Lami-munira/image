@@ -65,14 +65,14 @@ export function BlurPanel({ raw, busy, onApply }: BlurPanelProps) {
 
       <canvas
         ref={canvasRef}
-        className="mt-3 w-full rounded-md border border-border bg-[#0c0c0f]"
+        className="mt-3 w-full rounded-xl border border-border-soft bg-background"
       />
       <p className="mt-1 text-[10px] text-muted">Live preview (downscaled copy)</p>
 
       <button
         onClick={() => onApply(sigma)}
         disabled={busy}
-        className="mt-4 w-full px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="btn-primary w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {busy ? "Processing…" : "Apply Blur"}
       </button>

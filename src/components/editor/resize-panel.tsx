@@ -69,11 +69,7 @@ export function ResizePanel({ raw, version, busy, onApply }: ResizePanelProps) {
       {/* Presets */}
       <div className="flex flex-wrap gap-1.5 mb-4">
         {PRESETS.map((p) => (
-          <button
-            key={p}
-            onClick={() => scaleBy(p)}
-            className="px-2.5 py-1 rounded-md text-xs font-medium border border-border text-muted hover:border-accent hover:text-accent transition-colors"
-          >
+          <button key={p} onClick={() => scaleBy(p)} className="chip">
             ×{p}
           </button>
         ))}
@@ -92,7 +88,7 @@ export function ResizePanel({ raw, version, busy, onApply }: ResizePanelProps) {
             max={MAX_DIM}
             value={width}
             onChange={(e) => setW(parseInt(e.target.value))}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+            className="input"
           />
         </div>
         <div>
@@ -103,18 +99,13 @@ export function ResizePanel({ raw, version, busy, onApply }: ResizePanelProps) {
             max={MAX_DIM}
             value={height}
             onChange={(e) => setH(parseInt(e.target.value))}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+            className="input"
           />
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-2">
-        <button
-          onClick={() => setLock((v) => !v)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
-            lock ? "border-accent text-accent" : "border-border text-muted"
-          }`}
-        >
+        <button onClick={() => setLock((v) => !v)} className={`btn-ghost ${lock ? "on" : ""}`}>
           <svg
             width="14"
             height="14"
@@ -150,7 +141,7 @@ export function ResizePanel({ raw, version, busy, onApply }: ResizePanelProps) {
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value as MethodChoice)}
-          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+          className="input"
         >
           {METHODS.map((m) => (
             <option key={m} value={m}>
@@ -164,7 +155,7 @@ export function ResizePanel({ raw, version, busy, onApply }: ResizePanelProps) {
       <button
         onClick={() => onApply(width, height, method)}
         disabled={busy || !changed}
-        className="mt-4 w-full px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="btn-primary w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {busy ? "Processing…" : "Apply Resize"}
       </button>

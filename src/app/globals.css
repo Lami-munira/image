@@ -1,27 +1,39 @@
 @import "tailwindcss";
 
+/*
+ * NUDE palette (#3A2D28 #A48374 #CBAD8D #D1C7BD #EBE3DB #F1EDE6)
+ * mapped onto a warm dark, Blender-style editor theme:
+ * deep chocolate base → cocoa panels → tan accent, ivory text.
+ */
 :root {
-  --background: #0f0f13;
-  --foreground: #e4e4e7;
-  --card: #18181b;
-  --card-hover: #1e1e22;
-  --border: #27272a;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --muted: #71717a;
-  --success: #22c55e;
-  --danger: #ef4444;
+  --background: #1e1713;
+  --background-2: #271f19;
+  --card: #2b221c;
+  --card-hover: #3a2d28;
+  --raised: #332821;
+  --border: #443730;
+  --border-soft: #382d26;
+  --foreground: #f1ede6;
+  --muted: #a5948a;
+  --accent: #cbad8d;
+  --accent-hover: #ddc5a7;
+  --accent-ink: #2b2019;
+  --success: #a3b18a;
+  --danger: #d08a70;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
+  --color-raised: var(--raised);
   --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-muted: var(--muted);
+  --color-accent-ink: var(--accent-ink);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
@@ -29,11 +41,243 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1100px 640px at 50% -8%, rgba(203, 173, 141, 0.08), transparent 62%),
+    linear-gradient(180deg, var(--background-2), var(--background) 480px);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+::selection {
+  background: rgba(203, 173, 141, 0.32);
+}
+
+/* ————— Blender-style shared surfaces ————— */
+
+@layer components {
+  /* Floating card */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    box-shadow:
+      inset 0 1px 0 rgba(241, 237, 230, 0.04),
+      0 14px 36px rgba(0, 0, 0, 0.28);
+    animation: rise 0.35s ease both;
+  }
+
+  /* Text / number / select fields */
+  .input {
+    width: 100%;
+    background: var(--raised);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--foreground);
+    outline: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(203, 173, 141, 0.16);
+  }
+  .input::placeholder {
+    color: var(--muted);
+  }
+
+  /* Primary call-to-action — tan pill */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(180deg, var(--accent-hover), var(--accent));
+    color: var(--accent-ink);
+    border: 1px solid rgba(58, 45, 40, 0.4);
+    border-radius: 999px;
+    padding: 0.55rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow:
+      0 3px 14px rgba(203, 173, 141, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    transition:
+      filter 0.15s ease,
+      transform 0.08s ease,
+      box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.06);
+  }
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Soft rounded-rect action (content buttons, icon buttons) */
+  .btn-soft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--raised);
+    border: 1px solid var(--border-soft);
+    color: var(--foreground);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease,
+      transform 0.08s ease;
+    cursor: pointer;
+  }
+  .btn-soft:hover {
+    color: var(--accent);
+    border-color: rgba(203, 173, 141, 0.45);
+    background: rgba(203, 173, 141, 0.07);
+  }
+  .btn-soft:active {
+    transform: scale(0.97);
+  }
+  .btn-soft:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Small ghost pill (meta actions: undo, again, toggles) */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(241, 237, 230, 0.03);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 0.32rem 0.85rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease,
+      transform 0.08s ease;
+    cursor: pointer;
+  }
+  .btn-ghost:hover {
+    color: var(--accent);
+    border-color: rgba(203, 173, 141, 0.5);
+    background: rgba(203, 173, 141, 0.08);
+  }
+  .btn-ghost:active {
+    transform: scale(0.97);
+  }
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-ghost.danger:hover {
+    color: var(--danger);
+    border-color: rgba(208, 138, 112, 0.55);
+    background: rgba(208, 138, 112, 0.08);
+  }
+
+  /* Toggled-on state, shared by soft + ghost buttons */
+  .btn-soft.on,
+  .btn-ghost.on {
+    color: var(--accent);
+    border-color: rgba(203, 173, 141, 0.55);
+    background: rgba(203, 173, 141, 0.12);
+  }
+
+  /* Small toolbar chip (presets, mini toggles) */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--raised);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease;
+    cursor: pointer;
+  }
+  .chip:hover {
+    color: var(--accent);
+    border-color: rgba(203, 173, 141, 0.45);
+    background: rgba(203, 173, 141, 0.07);
+  }
+  .chip.on {
+    color: var(--accent);
+    border-color: rgba(203, 173, 141, 0.55);
+    background: rgba(203, 173, 141, 0.12);
+  }
+
+  /* Vertical tool tab in the sidebar rail */
+  .tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.55rem 0.25rem;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    background: transparent;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .tab-btn:hover {
+    color: var(--foreground);
+    background: rgba(241, 237, 230, 0.04);
+  }
+  .tab-btn.on {
+    color: var(--accent);
+    background: rgba(203, 173, 141, 0.12);
+    border-color: rgba(203, 173, 141, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(241, 237, 230, 0.05),
+      0 4px 14px rgba(0, 0, 0, 0.18);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* number inputs */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -44,9 +288,9 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Transparency checkerboard behind previews */
+/* Transparency checkerboard behind previews — warm neutrals */
 .checker {
-  background-image: conic-gradient(#232327 25%, #17171b 0 50%, #232327 0 75%, #17171b 0);
+  background-image: conic-gradient(#332b25 25%, #292219 0 50%, #332b25 0 75%, #292219 0);
   background-size: 16px 16px;
 }
 
@@ -55,14 +299,56 @@ input[type="number"] {
   image-rendering: pixelated;
 }
 
+/* Smooth custom range sliders */
 input[type="range"] {
-  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(203, 173, 141, 0.5), rgba(203, 173, 141, 0.16));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.18);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(203, 173, 141, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 input[type="color"] {
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   width: 28px;
   height: 28px;
   background: transparent;
@@ -71,4 +357,33 @@ input[type="color"] {
 
 input[type="checkbox"] {
   accent-color: var(--accent);
+}
+
+/* Slim warm scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--card-hover);
+  border-radius: 999px;
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a3a31;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

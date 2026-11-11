@@ -49,7 +49,7 @@ export function CompareStrip({ raw, version }: { raw: RawImage; version: number 
   }, [raw, version, srcSize]);
 
   return (
-    <div className="mt-5 pt-5 border-t border-border">
+    <div className="mt-5 pt-5 border-t border-border-soft">
       <div className="flex items-baseline justify-between mb-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">
           Method comparison
@@ -69,7 +69,7 @@ export function CompareStrip({ raw, version }: { raw: RawImage; version: number 
               }}
               width={TILE}
               height={TILE}
-              className={`w-full rounded-md border border-border bg-[#0c0c0f] ${m.pixelated ? "pixelated" : ""}`}
+              className={`w-full rounded-lg border border-border-soft bg-background ${m.pixelated ? "pixelated" : ""}`}
             />
             <p className="mt-1 text-[11px] font-medium">{m.label}</p>
             <p className="text-[10px] text-muted leading-tight">{m.caption}</p>

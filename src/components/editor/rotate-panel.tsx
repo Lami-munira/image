@@ -54,7 +54,7 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
               const a = b.act();
               if (a.kind === "quarter") onQuarter(a.q);
             }}
-            className="px-3 py-2.5 rounded-lg border border-border text-sm text-foreground hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+            className="btn-soft py-2.5"
           >
             {b.label}
           </button>
@@ -68,7 +68,7 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
               const a = b.act();
               if (a.kind === "flip") onFlip(a.axis);
             }}
-            className="px-3 py-2.5 rounded-lg border border-border text-sm text-foreground hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+            className="btn-soft py-2.5"
           >
             {b.label}
           </button>
@@ -76,7 +76,7 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
       </div>
 
       {/* Free angle */}
-      <div className="mt-6 pt-5 border-t border-border">
+      <div className="mt-6 pt-5 border-t border-border-soft">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Free angle</p>
 
         <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as "bilinear" | "bicubic")}
-              className="w-full bg-background border border-border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+              className="input"
             >
               <option value="bicubic">Bicubic</option>
               <option value="bilinear">Bilinear</option>
@@ -111,7 +111,6 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
                 type="checkbox"
                 checked={transparent}
                 onChange={(e) => setTransparent(e.target.checked)}
-                className="accent-[var(--accent)]"
                 title="Transparent corners"
               />
               <input
@@ -131,7 +130,7 @@ export function RotatePanel({ busy, onQuarter, onFlip, onFree }: RotatePanelProp
         <button
           onClick={() => onFree(deg, method, hexToRgba(fillColor, transparent ? 0 : 255))}
           disabled={busy || deg === 0}
-          className="mt-4 w-full px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-primary w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {busy ? "Processing…" : "Apply Rotation"}
         </button>
