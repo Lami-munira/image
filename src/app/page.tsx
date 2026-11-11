@@ -33,6 +33,7 @@ import { HistoryPanel, type HistoryRow } from "@/components/editor/history-panel
 
 type Tool = "resize" | "crop" | "rotate" | "blur" | "draw" | "export" | "history";
 type Status = "idle" | "loading" | "ready";
+type Theme = "dark" | "light";
 
 /** Longest visible-preview side, in canvas pixels (CSS scales it further). */
 const MAX_PREVIEW_PX = 2048;
@@ -76,6 +77,7 @@ const TABS: { id: Tool; label: string; icon: string }[] = [
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [original, setOriginal] = useState<ImageInfo | null>(null);
   const [tool, setTool] = useState<Tool>("resize");
   const [busy, setBusy] = useState<string | null>(null);
@@ -97,6 +99,25 @@ export default function Home() {
    * visible preview is GPU-scaled down from it (see MAX_PREVIEW_PX). */
   const fullCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // The boot script in layout.tsx already applied the saved theme pre-paint;
+  // pick it up so the toggle icon matches.
+  useEffect(() => {
+    if (document.documentElement.dataset.theme === "light") setTheme("light");
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => {
+      const next: Theme = t === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem("image-studio-theme", next);
+      } catch {
+        // private mode — session-only theme is fine
+      }
+      return next;
+    });
+  }, []);
 
   const syncHist = useCallback(() => {
     const h = historyRef.current;
@@ -330,7 +351,45 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-10">
+        <header className="relative text-center mb-10">
+          <button
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="btn-ghost absolute right-0 top-0"
+          >
+            {theme === "dark" ? (
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  strokeLinecap="round"
+                  d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"
+                />
+              </svg>
+            )}
+            {theme === "dark" ? "Light" : "Dark"}
+          </button>
           <h1 className="text-3xl font-semibold tracking-tight">Image Studio</h1>
           <p className="text-muted mt-1.5 text-sm">
             Resize, crop, rotate, blur, draw, convert — all math, all in your browser
@@ -343,7 +402,7 @@ export default function Home() {
             onDrop={onDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => inputRef.current?.click()}
-            className="max-w-3xl mx-auto rounded-[28px] border border-dashed border-border bg-card/40 p-14 text-center cursor-pointer transition-all duration-200 hover:border-accent/70 hover:bg-accent/[0.04] hover:shadow-[0_18px_44px_rgba(0,0,0,0.25)]"
+            className="max-w-3xl mx-auto rounded-[28px] border border-dashed border-border bg-card/40 p-14 text-center cursor-pointer transition-all duration-200 hover:border-accent/70 hover:bg-accent/[0.04] hover:shadow-[0_18px_44px_rgba(58,45,40,0.18)]"
           >
             <div className="mx-auto mb-5 w-16 h-16 rounded-full bg-raised border border-border-soft flex items-center justify-center">
               <svg
@@ -426,17 +485,17 @@ export default function Home() {
                       ref={previewRef}
                       className="block max-w-full max-h-[52vh] w-auto h-auto"
                     />
-                    <div className="absolute bottom-3 left-3 bg-[#1e1713]/80 backdrop-blur-sm border border-white/10 text-foreground text-xs px-2.5 py-1 rounded-full font-mono">
+                    <div className="absolute bottom-3 left-3 bg-background/85 backdrop-blur-sm border border-border text-foreground text-xs px-2.5 py-1 rounded-full font-mono">
                       {cur.width} × {cur.height} px
                       {histInfo.edits > 0 && (
-                        <span className="text-foreground/50">
+                        <span className="text-muted">
                           {" "}
                           · from {original.width} × {original.height}
                         </span>
                       )}
                     </div>
                     {busy && (
-                      <div className="absolute inset-0 bg-[#1e1713]/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3">
+                      <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3">
                         <span className="inline-block w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
                         <span className="text-foreground/80 text-sm">{busy}…</span>
                       </div>

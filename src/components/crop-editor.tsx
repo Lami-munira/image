@@ -207,7 +207,7 @@ export function CropEditor({
       : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#15100c]/90 backdrop-blur-sm p-4 select-none">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-md p-4 select-none">
       {/* Toolbar */}
       <div className="w-full max-w-5xl mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-foreground font-semibold text-base">Crop Image</h2>

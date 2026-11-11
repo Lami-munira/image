@@ -76,7 +76,7 @@ export function HistoryPanel({ rows, busy, onJump, onReapply }: HistoryPanelProp
               }}
               className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all cursor-pointer ${
                 row.isCurrent
-                  ? "border-accent/50 bg-accent/10 shadow-[0_4px_18px_rgba(203,173,141,0.10)]"
+                  ? "border-accent/50 bg-accent/10 glow-accent"
                   : "border-border-soft hover:border-accent/40 hover:bg-accent/[0.04]"
               } ${row.isFuture ? "opacity-55" : ""}`}
             >

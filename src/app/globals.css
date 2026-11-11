@@ -2,24 +2,52 @@
 
 /*
  * NUDE palette (#3A2D28 #A48374 #CBAD8D #D1C7BD #EBE3DB #F1EDE6)
- * mapped onto a warm dark, Blender-style editor theme:
- * deep chocolate base → cocoa panels → tan accent, ivory text.
+ * Default: a brightened warm-dark Blender-style theme.
+ * [data-theme="light"] on <html> switches to the bright cream variant
+ * of the same palette. Overlays use color-mix() so they adapt to both.
  */
 :root {
-  --background: #1e1713;
-  --background-2: #271f19;
-  --card: #2b221c;
-  --card-hover: #3a2d28;
-  --raised: #332821;
-  --border: #443730;
-  --border-soft: #382d26;
+  color-scheme: dark;
+  --background: #29211a;
+  --background-2: #352a22;
+  --card: #382d25;
+  --card-hover: #463931;
+  --raised: #443830;
+  --border: #574840;
+  --border-soft: #4a3c33;
   --foreground: #f1ede6;
-  --muted: #a5948a;
+  --muted: #b3a297;
   --accent: #cbad8d;
   --accent-hover: #ddc5a7;
   --accent-ink: #2b2019;
   --success: #a3b18a;
   --danger: #d08a70;
+  --panel-highlight: rgba(241, 237, 230, 0.05);
+  --panel-shadow: 0 14px 36px rgba(0, 0, 0, 0.3);
+  --checker-a: #3d332b;
+  --checker-b: #322921;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #f1ede6;
+  --background-2: #f7f3ec;
+  --card: #faf7f1;
+  --card-hover: #ebe3db;
+  --raised: #efe8df;
+  --border: #d5c9bc;
+  --border-soft: #e3d9cc;
+  --foreground: #3a2d28;
+  --muted: #8b7a6c;
+  --accent: #a48374;
+  --accent-hover: #b59486;
+  --accent-ink: #f8f4ee;
+  --success: #7d9367;
+  --danger: #b95f43;
+  --panel-highlight: rgba(255, 255, 255, 0.7);
+  --panel-shadow: 0 12px 32px rgba(58, 45, 40, 0.1);
+  --checker-a: #e7ddd2;
+  --checker-b: #ded2c4;
 }
 
 @theme inline {
@@ -42,15 +70,20 @@
 
 body {
   background:
-    radial-gradient(1100px 640px at 50% -8%, rgba(203, 173, 141, 0.08), transparent 62%),
+    radial-gradient(
+      1100px 640px at 50% -8%,
+      color-mix(in oklab, var(--accent) 10%, transparent),
+      transparent 62%
+    ),
     linear-gradient(180deg, var(--background-2), var(--background) 480px);
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: color 0.2s ease;
 }
 
 ::selection {
-  background: rgba(203, 173, 141, 0.32);
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 /* ————— Blender-style shared surfaces ————— */
@@ -62,8 +95,8 @@ body {
     border: 1px solid var(--border-soft);
     border-radius: 20px;
     box-shadow:
-      inset 0 1px 0 rgba(241, 237, 230, 0.04),
-      0 14px 36px rgba(0, 0, 0, 0.28);
+      inset 0 1px 0 var(--panel-highlight),
+      var(--panel-shadow);
     animation: rise 0.35s ease both;
   }
 
@@ -84,13 +117,13 @@ body {
   }
   .input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(203, 173, 141, 0.16);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent);
   }
   .input::placeholder {
     color: var(--muted);
   }
 
-  /* Primary call-to-action — tan pill */
+  /* Primary call-to-action — accent pill */
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -98,15 +131,15 @@ body {
     gap: 0.5rem;
     background: linear-gradient(180deg, var(--accent-hover), var(--accent));
     color: var(--accent-ink);
-    border: 1px solid rgba(58, 45, 40, 0.4);
+    border: 1px solid color-mix(in oklab, var(--accent-ink) 30%, transparent);
     border-radius: 999px;
     padding: 0.55rem 1.35rem;
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0.01em;
     box-shadow:
-      0 3px 14px rgba(203, 173, 141, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      0 3px 14px color-mix(in oklab, var(--accent) 28%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
     transition:
       filter 0.15s ease,
       transform 0.08s ease,
@@ -147,8 +180,8 @@ body {
   }
   .btn-soft:hover {
     color: var(--accent);
-    border-color: rgba(203, 173, 141, 0.45);
-    background: rgba(203, 173, 141, 0.07);
+    border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
   }
   .btn-soft:active {
     transform: scale(0.97);
@@ -163,7 +196,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    background: rgba(241, 237, 230, 0.03);
+    background: color-mix(in oklab, var(--foreground) 4%, transparent);
     border: 1px solid var(--border-soft);
     color: var(--muted);
     border-radius: 999px;
@@ -179,8 +212,8 @@ body {
   }
   .btn-ghost:hover {
     color: var(--accent);
-    border-color: rgba(203, 173, 141, 0.5);
-    background: rgba(203, 173, 141, 0.08);
+    border-color: color-mix(in oklab, var(--accent) 50%, transparent);
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
   }
   .btn-ghost:active {
     transform: scale(0.97);
@@ -191,16 +224,16 @@ body {
   }
   .btn-ghost.danger:hover {
     color: var(--danger);
-    border-color: rgba(208, 138, 112, 0.55);
-    background: rgba(208, 138, 112, 0.08);
+    border-color: color-mix(in oklab, var(--danger) 55%, transparent);
+    background: color-mix(in oklab, var(--danger) 8%, transparent);
   }
 
   /* Toggled-on state, shared by soft + ghost buttons */
   .btn-soft.on,
   .btn-ghost.on {
     color: var(--accent);
-    border-color: rgba(203, 173, 141, 0.55);
-    background: rgba(203, 173, 141, 0.12);
+    border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
   }
 
   /* Small toolbar chip (presets, mini toggles) */
@@ -223,13 +256,13 @@ body {
   }
   .chip:hover {
     color: var(--accent);
-    border-color: rgba(203, 173, 141, 0.45);
-    background: rgba(203, 173, 141, 0.07);
+    border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
   }
   .chip.on {
     color: var(--accent);
-    border-color: rgba(203, 173, 141, 0.55);
-    background: rgba(203, 173, 141, 0.12);
+    border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
   }
 
   /* Vertical tool tab in the sidebar rail */
@@ -254,16 +287,21 @@ body {
   }
   .tab-btn:hover {
     color: var(--foreground);
-    background: rgba(241, 237, 230, 0.04);
+    background: color-mix(in oklab, var(--foreground) 5%, transparent);
   }
   .tab-btn.on {
     color: var(--accent);
-    background: rgba(203, 173, 141, 0.12);
-    border-color: rgba(203, 173, 141, 0.35);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border-color: color-mix(in oklab, var(--accent) 35%, transparent);
     box-shadow:
-      inset 0 1px 0 rgba(241, 237, 230, 0.05),
-      0 4px 14px rgba(0, 0, 0, 0.18);
+      inset 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent),
+      0 4px 14px color-mix(in oklab, var(--accent) 18%, transparent);
   }
+}
+
+/* Warm glow for highlighted rows (history "current") */
+.glow-accent {
+  box-shadow: 0 4px 18px color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
 @keyframes rise {
@@ -288,9 +326,14 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Transparency checkerboard behind previews — warm neutrals */
+/* Transparency checkerboard behind previews — theme-aware warm neutrals */
 .checker {
-  background-image: conic-gradient(#332b25 25%, #292219 0 50%, #332b25 0 75%, #292219 0);
+  background-image: conic-gradient(
+    var(--checker-a) 25%,
+    var(--checker-b) 0 50%,
+    var(--checker-a) 0 75%,
+    var(--checker-b) 0
+  );
   background-size: 16px 16px;
 }
 
@@ -311,7 +354,11 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(203, 173, 141, 0.5), rgba(203, 173, 141, 0.16));
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--accent) 50%, transparent),
+    color-mix(in oklab, var(--accent) 16%, transparent)
+  );
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -322,7 +369,7 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 999px;
   background: var(--accent);
   border: 2px solid var(--card);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   transition: transform 0.12s ease;
 }
 
@@ -333,7 +380,7 @@ input[type="range"]:hover::-webkit-slider-thumb {
 input[type="range"]::-moz-range-track {
   height: 4px;
   border-radius: 999px;
-  background: rgba(203, 173, 141, 0.3);
+  background: color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -342,7 +389,7 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 999px;
   background: var(--accent);
   border: 2px solid var(--card);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
 
 input[type="color"] {
@@ -376,7 +423,7 @@ input[type="checkbox"] {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a3a31;
+  background: var(--border);
 }
 
 @media (prefers-reduced-motion: reduce) {

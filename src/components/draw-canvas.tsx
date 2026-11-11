@@ -418,13 +418,13 @@ export function DrawCanvas({ raw, version, busy, onCommit, onUndo, canUndo }: Dr
                 }}
                 onBlur={commitText}
                 placeholder="Type, Enter to place"
-                className="absolute px-2.5 py-1.5 rounded-lg bg-[#1e1713]/90 backdrop-blur-sm border border-accent/60 text-foreground text-sm outline-none min-w-48 shadow-lg"
+                className="absolute px-2.5 py-1.5 rounded-lg bg-card/95 backdrop-blur-sm border border-accent/60 text-foreground text-sm outline-none min-w-48 shadow-lg"
                 style={{ left: textBox.dx, top: textBox.dy }}
               />
             </div>
           )}
           {busy && (
-            <div className="absolute inset-0 bg-[#1e1713]/55 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
               <span className="inline-block w-7 h-7 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
           )}
